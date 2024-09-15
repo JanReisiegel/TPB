@@ -3,7 +3,7 @@ Navrhněte algoritmus, který bude postupně procházet články webového port�
 Ke každému článku uloží název článku, obsah článku, kategorii, počet fotografií, datum publikace a počet komentářů. (pozor na neúplné údaje)
 Informace bude ukládat do textového souboru ve formátu JSON. Doplňte i funkcionalitu pro načtení dat, bude potřebná pro další úlohy.
 '''
-
+import re
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -21,16 +21,31 @@ def fetch_article(article_html):
     soup = BeautifulSoup(article_html, 'html.parser')
 
     title = soup.find('h1').text if soup.find('h1') else None
-    content = ' '.join([p.text for p in soup
-                        .find_all('p')]) if soup.find_all('p') else None
-    category = soup.find(
-        'span', class_='c-breadcrumbs__title').text if soup.find(
-            'span', class_='c-breadcrumbs__title') else None
-    photos = len(soup.find_all('img')) if soup.find_all('img') else 0
-    date = soup.find('time').text if soup.find('time') else None
-    comments = soup.find(
-        'span', class_='c-article-meta__count').text if soup.find(
-            'span', class_='c-article-meta__count') else None
+
+    article_body = soup.find('div', id='art-text').prettify() if soup.find('div', id='art-text') else None
+
+    soup_text = BeautifulSoup(article_body, 'html.parser')
+
+    content = ' '.join([p.text for p in soup_text
+                        .find_all('p')]) if soup_text.find_all('p') else None
+
+    category_html = soup.find('ul', class_='iph-breadcrump').find_all('li')[-1] if soup.find('ul', class_='iph-breadcrump') else None
+
+    category_soup = BeautifulSoup(str(category_html), 'html.parser')
+    category = category_soup.find('a').text if category_html else None
+
+    photos = len(soup_text.find_all('img')) if soup_text.find_all('img') else 0
+
+    date = soup.find('meta', {
+        'itemprop': 'dateModified'
+        }).text if soup.find('meta', {
+            'itemprop': 'dateModified'
+            }) else None
+
+    html_comments = soup.find('a', id='moot-linkin').prettify() if soup.find('a', id='moot-linkin') else None
+
+    soup_comments = BeautifulSoup(html_comments, 'html.parser')
+    comments = int(re.search(r'\d+', soup_comments.find('span').text).group()) if soup_comments.find('span') else 0
 
     return {
         'title': title,
@@ -100,6 +115,7 @@ def main():
             continue
         else:
             data.append(fetch_article(html))
+            break
     save_to_file(data, 'articles.json')
 
     driver.quit()
