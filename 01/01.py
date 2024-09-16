@@ -13,40 +13,39 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
-
 ARTICLES = []
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+chrome_driver_path = './chromedriver.exe'
+service = Service(chrome_driver_path)
+driver = webdriver.Chrome(service=service, options=chrome_options)
 
 
 def fetch_article(article_html):
     soup = BeautifulSoup(article_html, 'html.parser')
-
     title = soup.find('h1').text if soup.find('h1') else None
-
-    article_body = soup.find('div', id='art-text').prettify() if soup.find('div', id='art-text') else None
-
-    soup_text = BeautifulSoup(article_body, 'html.parser')
-
-    content = ' '.join([p.text for p in soup_text
-                        .find_all('p')]) if soup_text.find_all('p') else None
-
-    category_html = soup.find('ul', class_='iph-breadcrump').find_all('li')[-1] if soup.find('ul', class_='iph-breadcrump') else None
-
+    article_body = soup.find('div', id='art-text') if soup.find('div', id='art-text') else None
+    content = ' '.join([p.text for p in article_body.find_all('p')])
+    content = content.replace('\n', ' ')
+    content = re.sub(r'\s+', ' ', content)
+    content = content.strip()
+    category_html = soup.find('ul', class_='iph-breadcrumb').find_all('li')[-1] if soup.find('ul', class_='iph-breadcrumb') else None
     category_soup = BeautifulSoup(str(category_html), 'html.parser')
     category = category_soup.find('a').text if category_html else None
-
-    photos = len(soup_text.find_all('img')) if soup_text.find_all('img') else 0
-
+    fotos_html = soup.find('div', class_='more-gallery').prettify() if soup.find('div', class_='more-gallery') else None
+    photos = 0
+    if fotos_html:
+        soup_photos = BeautifulSoup(fotos_html, 'html.parser')
+        photos = int(soup_photos.find('b').text) if soup_photos.find('b') else 0
+    else:
+        photos = len(article_body.find_all('img')) if article_body.find_all('img') else 0
     date = soup.find('meta', {
-        'itemprop': 'dateModified'
-        }).text if soup.find('meta', {
-            'itemprop': 'dateModified'
-            }) else None
-
+        'itemprop': 'datePublished'
+        }).get('content') if soup.find('meta', {
+            'itemprop': 'datePublished'}) else soup.find('span', {'itemprop': 'datePublished'}).get('content')
     html_comments = soup.find('a', id='moot-linkin').prettify() if soup.find('a', id='moot-linkin') else None
-
     soup_comments = BeautifulSoup(html_comments, 'html.parser')
     comments = int(re.search(r'\d+', soup_comments.find('span').text).group()) if soup_comments.find('span') else 0
-
     return {
         'title': title,
         'content': content,
@@ -70,54 +69,87 @@ def load_from_file(filename):
     return data
 
 
-def main():
-    chrome_options = Options()
-    #chrome_options.add_argument('--headless')
-    chrome_driver_path = './chromedriver.exe'
-
-    service = Service(chrome_driver_path)
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-
+def get_articles_group():
     URL = 'https://www.idnes.cz/zpravy'
     driver.get(URL)
-
     try:
         link = driver.find_element(By.XPATH,
                                    '//a[contains(text(), "Souhlasím")]')
         link.click()
     except Exception as e:
         print(f'No contentwall: {e}')
-
-    time.sleep(15)
-
+    time.sleep(2)
     html = driver.page_source
-
     soup = BeautifulSoup(html, 'html.parser')
-    new = soup.find_all('div', class_='art')
+    new = soup.find('ul', class_='iph-menu1').find_all('a', {'score-place': '2'})
+    result = []
     for i in new:
-        if i.find('a')['href'] not in ARTICLES:
-            ARTICLES.append(i.find('a')['href'])
+        url = i.get('href')
+        if (url is None):
+            continue
+        if (url.startswith('https://www.idnes.cz/') and url not in ARTICLES):
+            result.append(url)
+    print(result)
+    return result
 
+
+def get_articles():
+    url_adresses = get_articles_group()
+    index = 1
+    for url in url_adresses:
+        driver.get(url)
+        time.sleep(2)
+        continued = True
+        while continued:
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            articles = soup.find_all('div', class_='art') if soup.find_all('div', class_='art') else []
+            if len(articles) != 0:
+                for article in articles:
+                    link = article.find('a').get('href') if article.find('a') else None
+                    if (link is not None and link not in ARTICLES):
+                        ARTICLES.append(link)
+            print(f'Articles length: {len(ARTICLES)}')
+            if (len(ARTICLES) >= 400000/len(url_adresses)*index):
+                continued = False
+                break
+            try:
+                element = driver.find_element(By.XPATH, "//a[@class='ico-right' and @title='další']")
+                element.click()
+                time.sleep(1)
+            except Exception as e:
+                continued = False
+                continue
+        index += 1
+    
+
+
+def main():
     data = []
-
+    get_articles()
+    print("Articles done")
     for article in ARTICLES:
+        if not article.startswith('https://www.idnes.cz/'):
+            continue
         driver.get(article)
-        time.sleep(5)
+        time.sleep(1)
         html = driver.page_source
         payed = False
         try:
-            element = driver.find_element(By.XPATH, "//div[contains(@class, 'paywall-top-out')]")
-            payed = True
+            element = driver.find_element(By.XPATH, "//div[contains(@class, 'paywall-top-out')]") if driver.find_element(By.XPATH, "//div[contains(@class, 'paywall-top-out')]") else None
+            if element is None:
+                payed = False
+            else:
+                payed = True
         except Exception as e:
-            print(f'No paywall')
-        if payed:
-            print('Payed article')
-            continue
-        else:
-            data.append(fetch_article(html))
-            break
+            payed = False
+        if payed is False:
+            #print(f'Fetching article: {article}')
+            try:
+                data.append(fetch_article(html))
+            except Exception as e:
+                print("chyba")            
     save_to_file(data, 'articles.json')
-
     driver.quit()
 
 
