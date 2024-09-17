@@ -109,7 +109,6 @@ def get_articles():
                     link = article.find('a').get('href') if article.find('a') else None
                     if (link is not None and link not in ARTICLES):
                         ARTICLES.append(link)
-            print(f'Articles length: {len(ARTICLES)}')
             if (len(ARTICLES) >= 400000/len(url_adresses)*index):
                 continued = False
                 break
@@ -128,6 +127,9 @@ def main():
     data = []
     get_articles()
     print("Articles done")
+    print(f'Number of articles: {len(ARTICLES)}')
+    error = 0
+    done_article = 0
     for article in ARTICLES:
         if not article.startswith('https://www.idnes.cz/'):
             continue
@@ -147,8 +149,11 @@ def main():
             #print(f'Fetching article: {article}')
             try:
                 data.append(fetch_article(html))
+                done_article += 1
             except Exception as e:
-                print("chyba")            
+                error += 1            
+    print(f'Number of done articles: {done_article}')
+    print(f'Number of errors: {error}')
     save_to_file(data, 'articles.json')
     driver.quit()
 
