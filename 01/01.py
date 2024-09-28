@@ -4,7 +4,6 @@ Ke každému článku uloží název článku, obsah článku, kategorii, počet
 Informace bude ukládat do textového souboru ve formátu JSON. Doplňte i funkcionalitu pro načtení dat, bude potřebná pro další úlohy.
 '''
 import re
-import requests
 from bs4 import BeautifulSoup
 import json
 from selenium import webdriver
@@ -109,7 +108,7 @@ def get_articles():
                     link = article.find('a').get('href') if article.find('a') else None
                     if (link is not None and link not in ARTICLES):
                         ARTICLES.append(link)
-            if (len(ARTICLES) >= 400000/len(url_adresses)*index):
+            if (len(ARTICLES) >= 300000/len(url_adresses)*index):
                 continued = False
                 break
             try:
