@@ -131,9 +131,16 @@ def main():
     error = 0
     done_article = 0
     for article in ARTICLES:
-        if not article.startswith('https://www.idnes.cz/'):
+        if not article.startswith('https://www.idnes.cz/') and not article:
             continue
-        driver.get(article)
+        if driver.current_url == article:
+            print(f'Already fetched: {article}')
+            continue
+        try:
+            driver.get(article)
+        except Exception as e:
+            print(f'Error row 137')
+            continue
         time.sleep(1)
         html = driver.page_source
         payed = False
