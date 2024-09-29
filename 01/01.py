@@ -96,7 +96,10 @@ def get_articles():
     url_adresses = get_articles_group()
     index = 1
     for url in url_adresses:
-        driver.get(url)
+        try:
+            driver.get(url)
+        except Exception as e:
+            continue
         time.sleep(2)
         continued = True
         while continued:
@@ -138,7 +141,7 @@ def main():
         try:
             driver.get(article)
         except Exception as e:
-            print(f'Error row 137')
+            print(f'Error')
             continue
         time.sleep(1)
         html = driver.page_source
