@@ -18,7 +18,7 @@ SORTING = '?datum=&idostrova=idnes'
 COOKIES ={
     'kolbda': '1'
 }
-NUMBER_OF_ARTICLES = 40
+NUMBER_OF_ARTICLES = 400000
 ARTICLES_DATA = []
 
 
@@ -109,7 +109,9 @@ def get_articles():
             link = article.find('a').get('href')
             if (link is not None) and ('https://www.idnes.cz' in link) and ('/foto' not in link) and (link not in ARTICLES):
                 ARTICLES.append(link)
-        #print(len(ARTICLES))
+        if(len(ARTICLES) % 10 == 0):
+            LOGGER.info(f'{len(ARTICLES)} articles found')
+            #print(f'{len(ARTICLES)} articles found')
         
     #print(page)
     LOGGER.info(f'{page} Pages done')
@@ -118,13 +120,13 @@ def get_articles():
 
 
 def main():
-    LOGGER.info('Starting iDnes.cz scrapper')
+    LOGGER.debug('Starting iDnes.cz scrapper')
     not_articles = 0
     paywaaled = 0
     start = time.time()
     get_articles()
     
-    
+    done = 0
     for article in ARTICLES:
         response = requests.get(article, cookies=COOKIES)
         html_text = response.text
@@ -145,15 +147,19 @@ def main():
             continue
         article_data = fetch_article(html_text)
         ARTICLES_DATA.append(article_data)
+        done += 1
+        if(done % 10 == 0):
+            LOGGER.info(f'{done} articles done')
+            #print(f'{done} articles done')
     
     end = time.time()
     #print(f'Execution time: {end - start}')
     save_to_file(ARTICLES_DATA, 'articles.json')
     #print(len(ARTICLES_DATA))
-    LOGGER.info(f'Execution time: {end - start}')
-    LOGGER.info(f'Articles scrapped: {len(ARTICLES_DATA)}')
-    LOGGER.info(f'Not articles: {not_articles}')
-    LOGGER.info(f'Paywalled: {paywaaled}')
+    LOGGER.debug(f'Execution time: {end - start}')
+    LOGGER.debug(f'Articles scrapped: {len(ARTICLES_DATA)}')
+    LOGGER.debug(f'Not articles: {not_articles}')
+    LOGGER.debug(f'Paywalled: {paywaaled}')
     
 
 if __name__ == '__main__':
