@@ -1,3 +1,5 @@
+# pylint: skip-file
+# flake8: noqa
 '''
 Navrhněte algoritmus, který bude postupně procházet články webového portálu iDnes.cz.
 Ke každému článku uloží název článku, obsah článku, kategorii, počet fotografií, datum publikace a počet komentářů. (pozor na neúplné údaje)
@@ -6,19 +8,13 @@ Informace bude ukládat do textového souboru ve formátu JSON. Doplňte i funkc
 import re
 from bs4 import BeautifulSoup
 import json
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
+import requests
 import time
 ARTICLES = []
-chrome_options = Options()
-chrome_options.add_argument('--headless')
-chrome_driver_path = './chromedriver.exe'
-service = Service(chrome_driver_path)
-driver = webdriver.Chrome(service=service, options=chrome_options)
-
+URL = 'https://www.idnes.cz/zpravy/archiv/'
+COOKIES ={
+    'colbda': 1
+}
 
 def fetch_article(article_html):
     soup = BeautifulSoup(article_html, 'html.parser')
@@ -70,25 +66,7 @@ def load_from_file(filename):
 
 def get_articles_group():
     URL = 'https://www.idnes.cz/zpravy'
-    driver.get(URL)
-    try:
-        link = driver.find_element(By.XPATH,
-                                   '//a[contains(text(), "Souhlasím")]')
-        link.click()
-    except Exception as e:
-        print(f'No contentwall: {e}')
-    time.sleep(2)
-    html = driver.page_source
-    soup = BeautifulSoup(html, 'html.parser')
-    new = soup.find('ul', class_='iph-menu1').find_all('a', {'score-place': '2'})
-    result = []
-    for i in new:
-        url = i.get('href')
-        if (url is None):
-            continue
-        if (url.startswith('https://www.idnes.cz/') and url not in ARTICLES):
-            result.append(url)
-    print(result)
+    
     return result
 
 
@@ -127,45 +105,9 @@ def get_articles():
 
 
 def main():
-    data = []
-    get_articles()
-    print("Articles done")
-    print(f'Number of articles: {len(ARTICLES)}')
-    error = 0
-    done_article = 0
-    for article in ARTICLES:
-        if not article.startswith('https://www.idnes.cz/') and not article:
-            continue
-        if driver.current_url == article:
-            print(f'Already fetched: {article}')
-            continue
-        try:
-            driver.get(article)
-        except Exception as e:
-            print(f'Error: {article}')
-            continue
-        time.sleep(1)
-        html = driver.page_source
-        payed = False
-        try:
-            element = driver.find_element(By.XPATH, "//div[contains(@class, 'paywall-top-out')]") if driver.find_element(By.XPATH, "//div[contains(@class, 'paywall-top-out')]") else None
-            if element is None:
-                payed = False
-            else:
-                payed = True
-        except Exception as e:
-            payed = False
-        if payed is False:
-            #print(f'Fetching article: {article}')
-            try:
-                data.append(fetch_article(html))
-                done_article += 1
-            except Exception as e:
-                error += 1            
-    print(f'Number of done articles: {done_article}')
-    print(f'Number of errors: {error}')
-    save_to_file(data, 'articles.json')
-    driver.quit()
+    response = requests.get(URL, cookies=COOKIES)
+    print(response.text)
+    
 
 
 if __name__ == '__main__':
