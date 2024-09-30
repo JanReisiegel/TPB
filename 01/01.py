@@ -1,3 +1,5 @@
+# pylint: skip-file
+# flake8: noqa
 '''
 Navrhněte algoritmus, který bude postupně procházet články webového portálu iDnes.cz.
 Ke každému článku uloží název článku, obsah článku, kategorii, počet fotografií, datum publikace a počet komentářů. (pozor na neúplné údaje)

@@ -12,9 +12,12 @@ import requests
 import time
 ARTICLES = []
 URL = 'https://www.idnes.cz/zpravy/archiv/'
+SORTING = '?datum=&idostrova=idnes'
 COOKIES ={
-    'colbda': 1
+    'kolbda': '1'
 }
+NUMBER_OF_ARTICLES = 400
+ARTICLES_DATA = []
 
 def fetch_article(article_html):
     soup = BeautifulSoup(article_html, 'html.parser')
@@ -39,8 +42,10 @@ def fetch_article(article_html):
         }).get('content') if soup.find('meta', {
             'itemprop': 'datePublished'}) else soup.find('span', {'itemprop': 'datePublished'}).get('content')
     html_comments = soup.find('a', id='moot-linkin').prettify() if soup.find('a', id='moot-linkin') else None
-    soup_comments = BeautifulSoup(html_comments, 'html.parser')
-    comments = int(re.search(r'\d+', soup_comments.find('span').text).group()) if soup_comments.find('span') else 0
+    comments = 0
+    if(html_comments is not None):
+        soup_comments = BeautifulSoup(html_comments, 'html.parser')
+        comments = int(re.search(r'\d+', soup_comments.find('span').text).group()) if soup_comments.find('span') else 0
     return {
         'title': title,
         'content': content,
@@ -64,51 +69,55 @@ def load_from_file(filename):
     return data
 
 
-def get_articles_group():
-    URL = 'https://www.idnes.cz/zpravy'
-    
-    return result
-
-
 def get_articles():
-    url_adresses = get_articles_group()
-    index = 1
-    for url in url_adresses:
-        try:
-            driver.get(url)
-        except Exception as e:
-            print(url)
-            continue
-        time.sleep(2)
-        continued = True
-        while continued:
-            html = driver.page_source
-            soup = BeautifulSoup(html, 'html.parser')
-            articles = soup.find_all('div', class_='art') if soup.find_all('div', class_='art') else []
-            if len(articles) != 0:
-                for article in articles:
-                    link = article.find('a').get('href') if article.find('a') else None
-                    if (link is not None and link not in ARTICLES):
-                        ARTICLES.append(link)
-            if (len(ARTICLES) >= 300000/len(url_adresses)*index):
-                continued = False
-                break
-            try:
-                element = driver.find_element(By.XPATH, "//a[@class='ico-right' and @title='další']")
-                element.click()
-                time.sleep(1)
-            except Exception as e:
-                continued = False
-                continue
-        index += 1
-    
+    page = 0
+    while len(ARTICLES) < NUMBER_OF_ARTICLES:
+        page += 1
+        print(URL + str(page) + SORTING)
+        response = requests.get(URL + str(page) + SORTING, cookies=COOKIES)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        articles = soup.find_all('div', class_='art') if soup.find_all('div', class_='art') else []
+        if len(articles) == 0:
+            print('No articles found')
+            return
+        for article in articles:
+            link = article.find('a').get('href')
+            if (link is not None) and ('https://www.idnes.cz' in link) and ('/foto' not in link) and (link not in ARTICLES):
+                ARTICLES.append(link)
+        print(len(ARTICLES))
+    print(page)
 
 
 def main():
-    response = requests.get(URL, cookies=COOKIES)
-    print(response.text)
+    not_articles = 0
+    paywaaled = 0
+    start = time.time()
+    get_articles()
     
-
+    
+    for article in ARTICLES:
+        response = requests.get(article, cookies=COOKIES)
+        print(f'Fetching article: {article}')
+        html_text = response.text
+        soup = BeautifulSoup(html_text, 'html.parser')
+        paywall = True if soup.find('div', class_='paywall') else False
+        if paywall:
+            print('Paywall detected')
+            paywaaled += 1
+            continue
+        is_article = True if soup.find('div', id='art-text') else False
+        if(not is_article):
+            print('Not an article')
+            not_articles += 1
+            continue
+        article_data = fetch_article(html_text)
+        ARTICLES_DATA.append(article_data)
+    
+    end = time.time()
+    print(f'Execution time: {end - start}')
+    save_to_file(ARTICLES_DATA, 'articles2.json')
+    print(len(ARTICLES_DATA))
+    
 
 if __name__ == '__main__':
     main()
