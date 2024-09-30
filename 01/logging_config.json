@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "formatters": {
+    "console_formatter": {
+      "format": "%(name)s - %(levelname)s - %(message)s"
+    },
+    "file_formatter": {
+      "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    }
+  },
+  "handlers": {
+    "console_handler": {
+      "class": "logging.StreamHandler",
+      "level": "WARNING",
+      "formatter": "console_formatter"
+    },
+    "file_handler": {
+      "class": "logging.FileHandler",
+      "filename": "spam.log",
+      "level": "DEBUG",
+      "formatter": "file_formatter"
+    }
+  },
+  "loggers": {
+    "idnesScrapper": {
+      "level": "DEBUG",
+      "handlers": ["console_handler", "file_handler"]
+    }
+  }
+}

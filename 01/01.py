@@ -8,18 +8,39 @@ Informace bude ukládat do textového souboru ve formátu JSON. Doplňte i funkc
 import re
 from bs4 import BeautifulSoup
 import json
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
+import requests
 import time
+import logging
+import logging.config
 ARTICLES = []
-chrome_options = Options()
-chrome_options.add_argument('--headless')
-chrome_driver_path = './chromedriver.exe'
-service = Service(chrome_driver_path)
-driver = webdriver.Chrome(service=service, options=chrome_options)
+URL = 'https://www.idnes.cz/zpravy/archiv/'
+SORTING = '?datum=&idostrova=idnes'
+COOKIES ={
+    'kolbda': '1'
+}
+NUMBER_OF_ARTICLES = 40
+ARTICLES_DATA = []
+
+
+def load_logging_config(config_file):
+    """
+    Načte konfiguraci loggeru z JSON souboru
+    """
+    with open(config_file, 'r') as file:
+        config = json.load(file)
+    return config
+
+
+def setup_logger(logger_name="idnesScrapper", config_file="logging_config.json"):
+    """
+    Připraví logger se dvěma výstupy
+    """
+    logging_config = load_logging_config(config_file)
+    logging.config.dictConfig(logging_config)
+    return logging.getLogger(logger_name)
+
+
+LOGGER = setup_logger(logger_name="idnesScrapper")
 
 
 def fetch_article(article_html):
@@ -45,8 +66,10 @@ def fetch_article(article_html):
         }).get('content') if soup.find('meta', {
             'itemprop': 'datePublished'}) else soup.find('span', {'itemprop': 'datePublished'}).get('content')
     html_comments = soup.find('a', id='moot-linkin').prettify() if soup.find('a', id='moot-linkin') else None
-    soup_comments = BeautifulSoup(html_comments, 'html.parser')
-    comments = int(re.search(r'\d+', soup_comments.find('span').text).group()) if soup_comments.find('span') else 0
+    comments = 0
+    if(html_comments is not None):
+        soup_comments = BeautifulSoup(html_comments, 'html.parser')
+        comments = int(re.search(r'\d+', soup_comments.find('span').text).group()) if soup_comments.find('span') else 0
     return {
         'title': title,
         'content': content,
@@ -70,105 +93,68 @@ def load_from_file(filename):
     return data
 
 
-def get_articles_group():
-    URL = 'https://www.idnes.cz/zpravy'
-    driver.get(URL)
-    try:
-        link = driver.find_element(By.XPATH,
-                                   '//a[contains(text(), "Souhlasím")]')
-        link.click()
-    except Exception as e:
-        print(f'No contentwall: {e}')
-    time.sleep(2)
-    html = driver.page_source
-    soup = BeautifulSoup(html, 'html.parser')
-    new = soup.find('ul', class_='iph-menu1').find_all('a', {'score-place': '2'})
-    result = []
-    for i in new:
-        url = i.get('href')
-        if (url is None):
-            continue
-        if (url.startswith('https://www.idnes.cz/') and url not in ARTICLES):
-            result.append(url)
-    print(result)
-    return result
-
-
 def get_articles():
-    url_adresses = get_articles_group()
-    index = 1
-    for url in url_adresses:
-        try:
-            driver.get(url)
-        except Exception as e:
-            print(url)
-            continue
-        time.sleep(2)
-        continued = True
-        while continued:
-            html = driver.page_source
-            soup = BeautifulSoup(html, 'html.parser')
-            articles = soup.find_all('div', class_='art') if soup.find_all('div', class_='art') else []
-            if len(articles) != 0:
-                for article in articles:
-                    link = article.find('a').get('href') if article.find('a') else None
-                    if (link is not None and link not in ARTICLES):
-                        ARTICLES.append(link)
-            if (len(ARTICLES) >= 300000/len(url_adresses)*index):
-                continued = False
-                break
-            try:
-                element = driver.find_element(By.XPATH, "//a[@class='ico-right' and @title='další']")
-                element.click()
-                time.sleep(1)
-            except Exception as e:
-                continued = False
-                continue
-        index += 1
-    
+    page = 0
+    while len(ARTICLES) < NUMBER_OF_ARTICLES:
+        page += 1
+        #print(URL + str(page) + SORTING)
+        response = requests.get(URL + str(page) + SORTING, cookies=COOKIES)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        articles = soup.find_all('div', class_='art') if soup.find_all('div', class_='art') else []
+        if len(articles) == 0:
+            LOGGER.error('No articles found')
+            #print('No articles found')
+            return
+        for article in articles:
+            link = article.find('a').get('href')
+            if (link is not None) and ('https://www.idnes.cz' in link) and ('/foto' not in link) and (link not in ARTICLES):
+                ARTICLES.append(link)
+        #print(len(ARTICLES))
+        
+    #print(page)
+    LOGGER.info(f'{page} Pages done')
+    LOGGER.info(f'Articles totaly found: {len(ARTICLES)}')
+
 
 
 def main():
-    data = []
+    LOGGER.info('Starting iDnes.cz scrapper')
+    not_articles = 0
+    paywaaled = 0
+    start = time.time()
     get_articles()
-    print("Articles done")
-    print(f'Number of articles: {len(ARTICLES)}')
-    error = 0
-    done_article = 0
+    
+    
     for article in ARTICLES:
-        if not article.startswith('https://www.idnes.cz/') and not article:
+        response = requests.get(article, cookies=COOKIES)
+        html_text = response.text
+        soup = BeautifulSoup(html_text, 'html.parser')
+        paywall = True if soup.find('div', class_='paywall') else False
+        if paywall:
+            LOGGER.warning('Paywall detected')
+            LOGGER.info(article)
+            #print('Paywall detected')
+            paywaaled += 1
             continue
-        if driver.current_url == article:
-            print(f'Already fetched: {article}')
+        is_article = True if soup.find('div', id='art-text') else False
+        if(not is_article):
+            LOGGER.warning('Not an article')
+            LOGGER.info(article)
+            #print('Not an article')
+            not_articles += 1
             continue
-        try:
-            driver.get(article)
-        except Exception as e:
-            print(f'Error: {article}')
-            continue
-        time.sleep(1)
-        html = driver.page_source
-        payed = False
-        try:
-            element = driver.find_element(By.XPATH, "//div[contains(@class, 'paywall-top-out')]") if driver.find_element(By.XPATH, "//div[contains(@class, 'paywall-top-out')]") else None
-            if element is None:
-                payed = False
-            else:
-                payed = True
-        except Exception as e:
-            payed = False
-        if payed is False:
-            #print(f'Fetching article: {article}')
-            try:
-                data.append(fetch_article(html))
-                done_article += 1
-            except Exception as e:
-                error += 1            
-    print(f'Number of done articles: {done_article}')
-    print(f'Number of errors: {error}')
-    save_to_file(data, 'articles.json')
-    driver.quit()
-
+        article_data = fetch_article(html_text)
+        ARTICLES_DATA.append(article_data)
+    
+    end = time.time()
+    #print(f'Execution time: {end - start}')
+    save_to_file(ARTICLES_DATA, 'articles.json')
+    #print(len(ARTICLES_DATA))
+    LOGGER.info(f'Execution time: {end - start}')
+    LOGGER.info(f'Articles scrapped: {len(ARTICLES_DATA)}')
+    LOGGER.info(f'Not articles: {not_articles}')
+    LOGGER.info(f'Paywalled: {paywaaled}')
+    
 
 if __name__ == '__main__':
     main()

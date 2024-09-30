@@ -1,0 +1,57 @@
+2024-09-30 17:39:18,766 - idnesScrapper - INFO - Starting iDnes.cz scrapper
+2024-09-30 17:39:19,336 - idnesScrapper - INFO - 2 Pages done
+2024-09-30 17:39:19,336 - idnesScrapper - INFO - Articles totaly found: 70
+2024-09-30 17:39:20,722 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:39:20,723 - idnesScrapper - INFO - https://www.idnes.cz/zlin/zpravy/vondracek-rozhovor-novy-krajsky-zastupitel-zlin-snemovna.A240930_820032_zlin-zpravy_jfuk
+2024-09-30 17:39:23,951 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:39:23,951 - idnesScrapper - INFO - https://www.idnes.cz/kultura/hudba/lady-gaga-harlequin-recenze-joker.A240930_819997_hudba_jgo
+2024-09-30 17:39:29,735 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:39:29,736 - idnesScrapper - INFO - https://www.idnes.cz/zpravy/zahranicni/nasrallah-iran-izrael-hizballah-valka-spionaz-syrie-asad-libanon.A240930_123147_zahranicni_jhr
+2024-09-30 17:39:32,048 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:39:32,048 - idnesScrapper - INFO - https://www.idnes.cz/hradec-kralove/zpravy/lavka-cykliste-chodci-urazy-vodici-linie-bezpecnost-schody.A240928_194957_hradec-zpravy_tuu
+2024-09-30 17:39:35,313 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:39:35,313 - idnesScrapper - INFO - https://www.idnes.cz/auto/zpravodajstvi/ford-farley-cina-automobilka-elektromobil-strategie.A240922_090526_automoto_dohr
+2024-09-30 17:39:37,585 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:39:37,586 - idnesScrapper - INFO - https://www.idnes.cz/fotbal/prvni-liga/jan-kliment-rozhovor-reprezentace-olomouc-stuttgart.A240929_152823_fotbal_ald
+2024-09-30 17:39:37,840 - idnesScrapper - INFO - Execution time: 19.07208824157715
+2024-09-30 17:39:37,840 - idnesScrapper - INFO - Articles scrapped: 64
+2024-09-30 17:39:37,840 - idnesScrapper - INFO - Not articles: 0
+2024-09-30 17:39:37,840 - idnesScrapper - INFO - Paywalled: 6
+2024-09-30 17:41:08,876 - idnesScrapper - INFO - Starting iDnes.cz scrapper
+2024-09-30 17:41:09,417 - idnesScrapper - INFO - 2 Pages done
+2024-09-30 17:41:09,417 - idnesScrapper - INFO - Articles totaly found: 70
+2024-09-30 17:41:10,735 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:10,735 - idnesScrapper - INFO - https://www.idnes.cz/zlin/zpravy/vondracek-rozhovor-novy-krajsky-zastupitel-zlin-snemovna.A240930_820032_zlin-zpravy_jfuk
+2024-09-30 17:41:14,391 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:14,391 - idnesScrapper - INFO - https://www.idnes.cz/kultura/hudba/lady-gaga-harlequin-recenze-joker.A240930_819997_hudba_jgo
+2024-09-30 17:41:18,674 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:18,674 - idnesScrapper - INFO - https://www.idnes.cz/zpravy/zahranicni/nasrallah-iran-izrael-hizballah-valka-spionaz-syrie-asad-libanon.A240930_123147_zahranicni_jhr
+2024-09-30 17:41:20,825 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:20,825 - idnesScrapper - INFO - https://www.idnes.cz/hradec-kralove/zpravy/lavka-cykliste-chodci-urazy-vodici-linie-bezpecnost-schody.A240928_194957_hradec-zpravy_tuu
+2024-09-30 17:41:24,139 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:24,139 - idnesScrapper - INFO - https://www.idnes.cz/auto/zpravodajstvi/ford-farley-cina-automobilka-elektromobil-strategie.A240922_090526_automoto_dohr
+2024-09-30 17:41:26,329 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:26,329 - idnesScrapper - INFO - https://www.idnes.cz/fotbal/prvni-liga/jan-kliment-rozhovor-reprezentace-olomouc-stuttgart.A240929_152823_fotbal_ald
+2024-09-30 17:41:26,560 - idnesScrapper - INFO - Execution time: 17.681240558624268
+2024-09-30 17:41:26,560 - idnesScrapper - INFO - Articles scrapped: 64
+2024-09-30 17:41:26,560 - idnesScrapper - INFO - Not articles: 0
+2024-09-30 17:41:26,560 - idnesScrapper - INFO - Paywalled: 6
+2024-09-30 17:41:38,534 - idnesScrapper - INFO - Starting iDnes.cz scrapper
+2024-09-30 17:41:39,043 - idnesScrapper - INFO - 2 Pages done
+2024-09-30 17:41:39,043 - idnesScrapper - INFO - Articles totaly found: 70
+2024-09-30 17:41:40,457 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:40,458 - idnesScrapper - INFO - https://www.idnes.cz/zlin/zpravy/vondracek-rozhovor-novy-krajsky-zastupitel-zlin-snemovna.A240930_820032_zlin-zpravy_jfuk
+2024-09-30 17:41:44,033 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:44,033 - idnesScrapper - INFO - https://www.idnes.cz/kultura/hudba/lady-gaga-harlequin-recenze-joker.A240930_819997_hudba_jgo
+2024-09-30 17:41:49,139 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:49,140 - idnesScrapper - INFO - https://www.idnes.cz/zpravy/zahranicni/nasrallah-iran-izrael-hizballah-valka-spionaz-syrie-asad-libanon.A240930_123147_zahranicni_jhr
+2024-09-30 17:41:51,335 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:51,335 - idnesScrapper - INFO - https://www.idnes.cz/hradec-kralove/zpravy/lavka-cykliste-chodci-urazy-vodici-linie-bezpecnost-schody.A240928_194957_hradec-zpravy_tuu
+2024-09-30 17:41:54,441 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:54,441 - idnesScrapper - INFO - https://www.idnes.cz/auto/zpravodajstvi/ford-farley-cina-automobilka-elektromobil-strategie.A240922_090526_automoto_dohr
+2024-09-30 17:41:57,129 - idnesScrapper - WARNING - Paywall detected
+2024-09-30 17:41:57,129 - idnesScrapper - INFO - https://www.idnes.cz/fotbal/prvni-liga/jan-kliment-rozhovor-reprezentace-olomouc-stuttgart.A240929_152823_fotbal_ald
+2024-09-30 17:41:57,384 - idnesScrapper - INFO - Execution time: 18.84739899635315
+2024-09-30 17:41:57,384 - idnesScrapper - INFO - Articles scrapped: 64
+2024-09-30 17:41:57,384 - idnesScrapper - INFO - Not articles: 0
+2024-09-30 17:41:57,384 - idnesScrapper - INFO - Paywalled: 6
