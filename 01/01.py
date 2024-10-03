@@ -81,7 +81,7 @@ def fetch_article(article_html):
 
 
 def save_to_file(data, filename):
-    with open(filename, 'w', encoding='utf-8') as file:
+    with open(filename, 'w', encoding='utf-8', errors='replace') as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
         file.close()
 
@@ -102,14 +102,14 @@ def get_articles():
         soup = BeautifulSoup(response.text, 'html.parser')
         articles = soup.find_all('div', class_='art') if soup.find_all('div', class_='art') else []
         if len(articles) == 0:
-            LOGGER.error('No articles found')
+            LOGGER.critical('No articles found on page {page}')
             #print('No articles found')
-            return
+            continue
         for article in articles:
             link = article.find('a').get('href')
             if (link is not None) and ('https://www.idnes.cz' in link) and ('/foto' not in link) and (link not in ARTICLES):
                 ARTICLES.append(link)
-        if(len(ARTICLES) % 10 == 0):
+        if(page % 1000 == 0 ):
             LOGGER.info(f'{len(ARTICLES)} articles found')
             #print(f'{len(ARTICLES)} articles found')
         
